@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>First React App</title>
+      <link rel="stylesheet" href="general.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+      <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+      <script src='https://unpkg.com/babel-standalone@6/babel.min.js'></script>
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+   </head>
+   <body style='background-color:#ddd'>
+      <div id='app'></div>
+
+      <script type='text/babel'>
+
+         function Button(props){
+            return <button className={'btn ' + props.class} onClick={props.method}>{props.value}</button>
+         }
+
+         class TotalView extends React.Component{
+            
+            render(){
+               return(
+                  <div className='col-8 viewer'>{this.props.state.expression}</div>
+               );
+            }
+         }
+
+         class ClearButton extends React.Component{
+
+            render(){
+               return(
+                  <Button class='btn-danger col-2' method={this.props.handler} value='CLEAR' />
+               );
+            }
+         }
+
+         class DeleteButton extends React.Component{
+
+            render(){
+               return(
+                  <Button class='btn-warning col-2' method={this.props.handler} value='DELETE' />
+               );
+            }
+         }
+
+         class NumbersView extends React.Component{
+
+            render(){
+               const nums = Array('1','2','3','4','5','6','7','8','9','.','0');
+
+               return(
+                  <div className='col-8'>
+                     {
+                     nums.map( num => (
+                        <Button key={num.toString()} class='btn-secondary col-4' method={() => this.props.appendHandler(num)} value={num} /> 
+                     ))
+                     }
+                     <Button class='btn-success col-4' method={() => this.props.evalHandler(this.props.expression)} value='EVALUATE' />
+                  </div>
+               );
+            }
+         }
+
+         class OperationsView extends React.Component{
+
+            render(){
+               const ops = { 
+                  add: '+',
+                  subtract: '-',
+                  multiply: '*',
+                  divide: '/'
+               }
+
+               return(
+                  <div className='col-4'>
+                     {
+                     Object.keys(ops).map( op => (
+                        <Button key={op.toString()} class='btn-secondary col-6' method={() => this.props.appendHandler(ops[op])} value={ops[op]} /> 
+                     ))
+                     }
+                  </div>
+               );
+            }
+         }
+
+         class App extends React.Component{
+
+            constructor(props){
+               super(props);
+               this.state = {
+                  expression: ''
+               };
+               this.resetExpression = this.resetExpression.bind(this);
+               this.deleteExpression = this.deleteExpression.bind(this);
+               this.appendExpression = this.appendExpression.bind(this);
+               this.evaluateExpression = this.evaluateExpression.bind(this);
+            }
+
+            resetExpression(){
+               this.setState({expression: ''});
+            }
+            deleteExpression(){
+               this.setState( state => ({
+                  expression: state.expression.substring(0, (state.expression.length)-1)
+               }));
+            }
+            appendExpression(append){
+               this.setState( state => ({
+                  expression: state.expression + append
+               }));
+            }
+            evaluateExpression(expression){
+               this.setState( state => ({
+                  expression: eval(expression.toString())
+               }));
+            }
+
+            render(){
+               return (
+                  <div className='container'>
+                     <div className='row'>
+                        <TotalView state={this.state} />
+                        <ClearButton handler={this.resetExpression} />
+                        <DeleteButton handler={this.deleteExpression} />
+                     </div>
+                     <div className='row'>
+                        <NumbersView expression={this.state.expression} evalHandler={this.evaluateExpression} appendHandler={this.appendExpression} />
+                        <OperationsView appendHandler={this.appendExpression} />
+                     </div>
+                  </div>
+               );
+            }
+         }
+
+         ReactDOM.render(
+            <App />,
+            document.getElementById('app')
+         );
+
+      </script>
+   </body>
+</html>
