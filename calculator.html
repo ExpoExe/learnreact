@@ -114,7 +114,7 @@
             }
             evaluateExpression(expression){
                this.setState( state => ({
-                  expression: eval(expression.toString())
+                  expression: eval(expression.toString()).toString()
                }));
             }
 
