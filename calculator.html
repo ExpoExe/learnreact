@@ -19,71 +19,51 @@
             return <button className={'btn ' + props.class} onClick={props.method}>{props.value}</button>
          }
 
-         class TotalView extends React.Component{
+         function TotalView(props){
+            return <div className='col-8 viewer'>{props.state.expression}</div>
+         }
+
+         function ClearButton(props){
+            return <Button class='btn-danger col-2' method={props.handler} value='CLEAR' />
+         }
+
+         function DeleteButton(props){
+               return <Button class='btn-warning col-2' method={props.handler} value='DELETE' />
+         }
+
+         function NumbersView(props){
+            const nums = Array('1','2','3','4','5','6','7','8','9','.','0');
+
+            return(
+               <div className='col-8'>
+                  {
+                  nums.map( num => (
+                     <Button key={num} class='btn-secondary col-4' method={() => props.appendHandler(num)} value={num} /> 
+                  ))
+                  }
+                  <Button class='btn-success col-4' method={() => props.evalHandler(props.expression)} value='EVALUATE' />
+               </div>
+            );
+         }
+
+         function OperationsView(props){
+            const ops = { 
+               add: '+',
+               subtract: '-',
+               multiply: '*',
+               divide: '/'
+            }
+               
+            return(
+               <div className='col-4'>
+                  {
+                  Object.keys(ops).map( op => (
+                     <Button key={op.toString()} class='btn-secondary col-6' method={() => props.appendHandler(ops[op])} value={ops[op]} /> 
+                  ))
+                  }
+               </div>
+            );
             
-            render(){
-               return(
-                  <div className='col-8 viewer'>{this.props.state.expression}</div>
-               );
-            }
-         }
-
-         class ClearButton extends React.Component{
-
-            render(){
-               return(
-                  <Button class='btn-danger col-2' method={this.props.handler} value='CLEAR' />
-               );
-            }
-         }
-
-         class DeleteButton extends React.Component{
-
-            render(){
-               return(
-                  <Button class='btn-warning col-2' method={this.props.handler} value='DELETE' />
-               );
-            }
-         }
-
-         class NumbersView extends React.Component{
-
-            render(){
-               const nums = Array('1','2','3','4','5','6','7','8','9','.','0');
-
-               return(
-                  <div className='col-8'>
-                     {
-                     nums.map( num => (
-                        <Button key={num.toString()} class='btn-secondary col-4' method={() => this.props.appendHandler(num)} value={num} /> 
-                     ))
-                     }
-                     <Button class='btn-success col-4' method={() => this.props.evalHandler(this.props.expression)} value='EVALUATE' />
-                  </div>
-               );
-            }
-         }
-
-         class OperationsView extends React.Component{
-
-            render(){
-               const ops = { 
-                  add: '+',
-                  subtract: '-',
-                  multiply: '*',
-                  divide: '/'
-               }
-
-               return(
-                  <div className='col-4'>
-                     {
-                     Object.keys(ops).map( op => (
-                        <Button key={op.toString()} class='btn-secondary col-6' method={() => this.props.appendHandler(ops[op])} value={ops[op]} /> 
-                     ))
-                     }
-                  </div>
-               );
-            }
          }
 
          class App extends React.Component{
