@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Popular Repos</title>
+   <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+   <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+   <script src='https://unpkg.com/babel-standalone@6/babel.min.js'></script>
+</head>
+<body>
+
+<div id='app'></div>
+
+<script>
+   window.API = {
+      fetchPopularRepos(language){
+         // "language" can be "javascript", "ruby", "python", or "all"
+         const encodedURI = encodeURI(`https://api.github.com/search/repositories?q=stars:>1+language:${language}&sort=stars&order=desc&type=Repositories`);
+
+         return fetch(encodedURI)
+            .then((data) => data.json())
+            .then((repos) => repos.items)
+            .catch((error) => {
+               console.warn(error)
+               return null
+         });
+      }
+   }
+</script>
+
+<script type='text/babel'>
+
+   class Loading extends React.Component{
+
+      constructor(props){
+         super(props);
+
+         this.state = {
+            text: 'Loading'
+         };
+      }
+
+      componentDidMount(){
+         const stopper = this.state.text + '...';
+
+         this.interval = window.setInterval(() => {
+            this.state.text === stopper
+               ? this.setState(() => ({ text: 'Loading' }))
+               : this.setState((prevState) => ({ text: prevState.text + '.' }));
+         }, 300);
+      }
+
+      componentWillUnmount(){
+         window.clearInterval(this.interval);
+      }
+
+      render(){
+         return (
+            <p>
+               {this.state.text}
+            </p>
+         );
+      }
+   }
+
+   function Grid (props){	
+      return (
+			<ul style={{display: 'flex', flexWrap: 'wrap'}}>
+				{
+					props.repos.map(({created_at, html_url, name, owner, stargazers_count}) => (
+						<li key={name} style={{margin: '30px'}}>
+							<ul>
+								<li><a href={html_url}>{name}</a></li>
+								<li>Owned by: {owner.login}</li>
+								<li>Created {created_at.substring(0,10)}</li>
+								<li>Stars: {stargazers_count}</li>
+							</ul>
+						</li>
+					))
+				}
+			</ul>
+		);
+   }
+
+   function Nav (props){
+      const languages = ['all', 'javascript', 'ruby', 'python'];
+
+      return (
+         <nav>
+         <h2>Choices</h2>
+            <ul style={{maxWidth: '100px'}}>
+               {languages.map((lang) => (
+                  <li key={lang} onClick={() => props.onSelectLanguage(lang)}>
+                     <a href='javascript:void(0);'>{lang}</a>
+                  </li>
+               ))}
+            </ul>
+         </nav>
+      )
+   }
+
+
+
+   class App extends React.Component{
+
+      constructor(props){
+         super(props);
+         this.state = {
+            loading:true,
+            activeLanguage: 'all',
+            repos: []
+         };
+         this.handleSelectLanguage = this.handleSelectLanguage.bind(this);
+			this.fetchRepoData = this.fetchRepoData.bind(this);
+      }
+
+      componentDidMount() {
+      	this.fetchRepoData(this.state.activeLanguage)
+      }
+
+      componentDidUpdate (prevProps, prevState) {
+      	if (prevState.activeLanguage !== this.state.activeLanguage) {
+				this.fetchRepoData(this.state.activeLanguage)
+        	}
+      }
+
+      handleSelectLanguage(lang){
+         console.log('selected: ' + lang);
+         this.setState({
+            activeLanguage: lang
+         });
+      }
+
+      fetchRepoData(lang){
+         this.setState({loading: true});
+         window.API.fetchPopularRepos(lang)
+            .then((res) => {
+               this.setState({
+                  loading: false,
+                  repos: res
+               });
+            });
+      }
+
+      render(){
+         return (
+            <div>
+            <Nav onSelectLanguage={this.handleSelectLanguage} />
+            {this.state.loading === true
+               ?  <Loading />
+               :  <div>
+                  <h1>
+                     {this.state.activeLanguage}
+                  </h1>
+                  <Grid repos={this.state.repos} />
+                  </div>}
+          </div>
+        );
+      }
+   }
+
+   ReactDOM.render(
+      <App />,
+      document.getElementById('app')
+   );
+
+</script>
+</body>
+</html>

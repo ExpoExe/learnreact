@@ -6,10 +6,65 @@
   <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
   <script src='https://unpkg.com/babel-standalone@6/babel.min.js'></script>
 </head>
-<body style='background-color: #555; color: #ddd;'>
+<body style='background-color: #555; color: rgb(67, 199, 122);'>
    <div id='app'></div>
 
+  <script>
+    window.API = {
+      fetchFriends() {
+        return new Promise((res, rej) => {
+          const friends = [
+            {
+              name: 'Jordyn',
+              active: true,
+            },
+            {
+              name: 'Mikenzi',
+              active: true,
+            },
+            {
+              name: 'Jake',
+              active: false
+            }
+          ]
+
+          setTimeout(() => res(friends), 2000)
+        })
+      }
+    }
+  </script>
+
   <script type='text/babel'>
+
+    class Loading extends React.Component{
+
+      constructor(props){
+        super(props);
+
+        this.state = {
+          text: 'Loading'
+        };
+      }
+
+      componentDidMount() {
+        const stopper = this.state.text + '...';
+
+        this.interval = window.setInterval(() => {
+          this.state.text === stopper
+            ? this.setState(() => ({ text: 'Loading' }))
+            : this.setState((prevState) => ({ text: prevState.text + '.' }))
+        }, 300)
+      }
+      componentWillUnmount() {
+        window.clearInterval(this.interval);
+      }
+
+      render(){
+        return (<h2>{this.state.text}</h2>);
+      }
+
+    }
+
     function ActiveFriends (props) {
       return (
         <div>
@@ -47,77 +102,86 @@
       constructor(props) {
         super(props)
         this.state = {
-          friends: [
-            {
-              name: 'Jordyn',
-              active: true,
-            },
-            {
-              name: 'Mikenzi',
-              active: true,
-            },
-            {
-              name: 'Jake',
-              active: false
-            }
-          ],
+          friends: [],
           input: '',
-         }
+          loading: true
+         };
 
-         this.handleRemoveFriend = this.handleRemoveFriend.bind(this)
-         this.updateInput = this.updateInput.bind(this)
-         this.handleAddFriend = this.handleAddFriend.bind(this)
-         this.handleToggleFriend = this.handleToggleFriend.bind(this)
+         this.handleRemoveFriend = this.handleRemoveFriend.bind(this);
+         this.updateInput = this.updateInput.bind(this);
+         this.handleAddFriend = this.handleAddFriend.bind(this);
+         this.handleToggleFriend = this.handleToggleFriend.bind(this);
+
+         console.log('--constructor--');
       }
 
+      componentDidMount() {
+        console.log('--didMount--');
+        API.fetchFriends()
+          .then((friends) => {
+            this.setState({
+              friends,
+              loading: false,
+            })
+        })
+      }
+      componentDidUpdate(){console.log('--didUpdate--');}
+      componentWillUnmount(){console.log('--didUnmount--');}
+
       handleAddFriend() {
-         this.setState((currentState) => {
+         this.setState((prevState) => {
          
             if(this.state.input === ''){
                console.log('Do not add empty friend');
                return;
             }
             return {
-               friends: currentState.friends.concat([{
-               name: currentState.input,
+               friends: prevState.friends.concat([{
+               name: prevState.input,
                active: true
                }]),
                input: ''
             }
-         })
+         });
       }
 
       handleRemoveFriend(name) {
-         this.setState((currentState) => {
+         this.setState((prevState) => {
             return {
-               friends: currentState.friends.filter((friend) => friend.name !== name)
+               friends: prevState.friends.filter((friend) => friend.name !== name)
             }
-         })
+         });
       }
 
       handleToggleFriend(name) {
-         this.setState((currentState) => {
-            const friend = currentState.friends.find((friend) => friend.name === name)
+         this.setState((prevState) => {
+            const friend = prevState.friends.find((friend) => friend.name === name)
 
             return {
-               friends: currentState.friends.filter((friend) => friend.name !== name)
+               friends: prevState.friends.filter((friend) => friend.name !== name)
                .concat([{
                   name: name,
                   active: !friend.active
                }])
             }
-        })
+        });
       }
 
       updateInput(e) {
-         const value = e.target.value
+         const value = e.target.value;
 
          this.setState({
             input: value
-         })
+         });
       }
 
       render() {
+        console.log('--render--');
+
+        if (this.state.loading){
+          return <Loading />;
+        }
+
          return (
             <div>
                <input
